@@ -108,7 +108,10 @@ namespace GameEngine2D.Core.Engine
 
         private void CloneEnemies(Level level)
         {
-            GoblinPrototype goblinPrototype = new GoblinPrototype("Goblin Prototype", 50, 10, 24, 8);
+            IEnemyPrototype goblinPrototype = new GoblinPrototype("Goblin Prototype", 50, 10, 24, 8);
+
+            Enemy original = goblinPrototype.Clone();
+            original.Name = "Goblin Original";
 
             Enemy clone1 = goblinPrototype.Clone();
             clone1.Name = "Goblin Clone #1";
@@ -118,12 +121,12 @@ namespace GameEngine2D.Core.Engine
             clone2.Name = "Goblin Clone #2";
             clone2.X = 32;
 
-            level.Characters.Add(goblinPrototype);
+            level.Characters.Add(original);
             level.Characters.Add(clone1);
             level.Characters.Add(clone2);
 
             Console.WriteLine("[Prototype] Enemies cloned:");
-            Console.WriteLine("- Goblin Prototype");
+            Console.WriteLine("- Goblin Original");
             Console.WriteLine("- Goblin Clone #1");
             Console.WriteLine("- Goblin Clone #2");
             Console.WriteLine();
