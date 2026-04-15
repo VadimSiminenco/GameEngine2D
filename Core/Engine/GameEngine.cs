@@ -1,16 +1,33 @@
 ﻿using GameEngine2D.Biomes;
+using GameEngine2D.Bosses;
 using GameEngine2D.Cloning;
 using GameEngine2D.Construction;
 using GameEngine2D.Core.Configuration;
 using GameEngine2D.Core.World;
 using GameEngine2D.Entities.Characters;
 using GameEngine2D.Entities.Structures;
+using GameEngine2D.Facades;
+using GameEngine2D.Rendering;
 using GameEngine2D.Spawning;
+using GameEngine2D.Weapons;
 
 namespace GameEngine2D.Core.Engine
 {
     public class GameEngine
     {
+        private readonly GameRenderer _gameRenderer;
+        private readonly OldSpriteRenderer _oldSpriteRenderer;
+        private readonly BattleFacade _battleFacade;
+
+        private IBoss? _boss;
+
+        public GameEngine()
+        {
+            _gameRenderer = new GameRenderer();
+            _oldSpriteRenderer = new OldSpriteRenderer();
+            _battleFacade = new BattleFacade();
+        }
+
         public void RunDemo()
         {
             Console.WriteLine("========================================");
@@ -23,14 +40,22 @@ namespace GameEngine2D.Core.Engine
             Level level = CreateLevel();
 
             SpawnCharacters(level);
-
             BuildStructures(level);
-
             CloneEnemies(level);
 
             level.PrintInfo();
-
             PrintAsciiMap(level);
+
+            Console.WriteLine();
+            Console.WriteLine("=== STRUCTURAL PATTERNS INTEGRATION ===");
+            Console.WriteLine();
+
+            RenderLevelWithAdapter(level);
+
+            IWeapon playerWeapon = CreatePlayerWeapon();
+
+            PrepareBossProxy();
+            StartBossEncounter(playerWeapon);
         }
 
         private void LoadConfig()
@@ -129,6 +154,78 @@ namespace GameEngine2D.Core.Engine
             Console.WriteLine("- Goblin Original");
             Console.WriteLine("- Goblin Clone #1");
             Console.WriteLine("- Goblin Clone #2");
+            Console.WriteLine();
+        }
+
+        private void RenderLevelWithAdapter(Level level)
+        {
+            Console.WriteLine("[Adapter] Rendering level objects through unified engine interface:");
+
+            foreach (Character character in level.Characters)
+            {
+                IGameDrawable drawable = new CharacterRenderAdapter(character, _oldSpriteRenderer);
+                _gameRenderer.Render(drawable);
+            }
+
+            foreach (Structure structure in level.Structures)
+            {
+                IGameDrawable drawable = new StructureRenderAdapter(structure, _oldSpriteRenderer);
+                _gameRenderer.Render(drawable);
+            }
+
+            Console.WriteLine();
+        }
+
+        private IWeapon CreatePlayerWeapon()
+        {
+            Console.WriteLine("[Bridge + Decorator] Preparing player weapon:");
+
+            IWeapon weapon = new Sword(
+                GameConfig.Instance.PlayerWeaponDamage,
+                new MeleeAttackImplementor());
+
+            Console.WriteLine("- Base weapon: Sword");
+            Console.WriteLine("- Attack implementation: MeleeAttackImplementor");
+
+            weapon = new FireWeapon(
+                weapon,
+                GameConfig.Instance.FireEffectDamage);
+
+            Console.WriteLine("- Added decorator: FireEffectDecorator");
+
+            if (GameConfig.Instance.UseIceEffect)
+            {
+                weapon = new IceWeapon(weapon);
+                Console.WriteLine("- Added decorator: IceEffectDecorator");
+            }
+
+            Console.WriteLine();
+            return weapon;
+        }
+
+        private void PrepareBossProxy()
+        {
+            _boss = new BossProxy(
+                GameConfig.Instance.BossName,
+                GameConfig.Instance.BossHealth,
+                GameConfig.Instance.BossDamage);
+
+            Console.WriteLine("[Proxy] Boss is prepared through BossProxy.");
+            Console.WriteLine("- RealBoss has not been created yet.");
+            Console.WriteLine($"- Preview: {_boss.GetInfo()}");
+            Console.WriteLine();
+        }
+
+        private void StartBossEncounter(IWeapon playerWeapon)
+        {
+            if (_boss == null)
+            {
+                Console.WriteLine("Boss is not ready.");
+                return;
+            }
+
+            Console.WriteLine("[Facade] Starting boss encounter...");
+            _battleFacade.StartBossBattle(playerWeapon, _boss);
             Console.WriteLine();
         }
 

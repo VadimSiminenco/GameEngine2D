@@ -1,4 +1,5 @@
-﻿using GameEngine2D.Core.Engine;
+﻿using System.Text;
+using GameEngine2D.Core.Engine;
 using GameEngine2D.Tests;
 
 namespace GameEngine2D
@@ -7,8 +8,17 @@ namespace GameEngine2D
     {
         static void Main(string[] args)
         {
-            Console.OutputEncoding = System.Text.Encoding.UTF8;
-            EngineTests.RunAllTests();
+            Console.OutputEncoding = Encoding.UTF8;
+
+            bool runTests = Array.Exists(
+                args,
+                arg => arg.Equals("--tests", StringComparison.OrdinalIgnoreCase));
+
+            if (runTests)
+            {
+                EngineTests.RunAllTests();
+                Console.WriteLine();
+            }
 
             GameEngine engine = new GameEngine();
             engine.RunDemo();
