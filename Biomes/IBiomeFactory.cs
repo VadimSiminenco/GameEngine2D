@@ -1,8 +1,9 @@
-﻿using GameEngine2D.Biomes;
-
-public interface IBiomeFactory
+﻿namespace GameEngine2D.Biomes
 {
-    IBackground CreateBackground();
-    IPlatformStyle CreatePlatformStyle();
-    IDecorationStyle CreateDecorationStyle();
+    public interface IBiomeFactory
+    {
+        IBackground CreateBackground();
+        IPlatformStyle CreatePlatformStyle();
+        IDecorationStyle CreateDecorationStyle();
+    }
 }

@@ -15,18 +15,7 @@ namespace GameEngine2D.Rendering
 
         public void Draw()
         {
-            adaptee.RenderSprite(GetSpriteName(), structure.X, structure.Y);
-        }
-
-        private string GetSpriteName()
-        {
-            return structure.Name switch
-            {
-                "House" => "house_sprite",
-                "Bridge" => "bridge_sprite",
-                "Trap" => "trap_sprite",
-                _ => "unknown_structure_sprite"
-            };
+            adaptee.RenderSprite(structure.SpriteKey, structure.X, structure.Y);
         }
     }
 }

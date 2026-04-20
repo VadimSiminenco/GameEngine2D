@@ -15,18 +15,7 @@ namespace GameEngine2D.Rendering
 
         public void Draw()
         {
-            adaptee.RenderSprite(GetSpriteName(), character.X, character.Y);
-        }
-
-        private string GetSpriteName()
-        {
-            return character switch
-            {
-                Player => "player_sprite",
-                Npc => "npc_sprite",
-                Enemy => "enemy_sprite",
-                _ => "unknown_character_sprite"
-            };
+            adaptee.RenderSprite(character.SpriteKey, character.X, character.Y);
         }
     }
 }

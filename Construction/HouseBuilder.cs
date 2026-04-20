@@ -12,7 +12,9 @@ namespace GameEngine2D.Construction
             {
                 Name = "House",
                 X = 34,
-                Y = 8
+                Y = 8,
+                MapSymbol = 'H',
+                SpriteKey = "house_sprite"
             };
         }
 

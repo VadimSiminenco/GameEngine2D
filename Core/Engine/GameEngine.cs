@@ -1,15 +1,20 @@
 ﻿using GameEngine2D.Biomes;
 using GameEngine2D.Bosses;
 using GameEngine2D.Cloning;
+using GameEngine2D.Commands;
 using GameEngine2D.Construction;
 using GameEngine2D.Core.Configuration;
 using GameEngine2D.Core.World;
 using GameEngine2D.Entities.Characters;
 using GameEngine2D.Entities.Structures;
 using GameEngine2D.Facades;
+using GameEngine2D.Input;
+using GameEngine2D.Observers;
 using GameEngine2D.Rendering;
 using GameEngine2D.Spawning;
+using GameEngine2D.Strategies;
 using GameEngine2D.Weapons;
+using System.Linq;
 
 namespace GameEngine2D.Core.Engine
 {
@@ -18,44 +23,137 @@ namespace GameEngine2D.Core.Engine
         private readonly GameRenderer _gameRenderer;
         private readonly OldSpriteRenderer _oldSpriteRenderer;
         private readonly BattleFacade _battleFacade;
+        private readonly InputHandler _inputHandler;
 
+        private Level? _currentLevel;
+        private Player? _player;
         private IBoss? _boss;
+        private IWeapon? _playerWeapon;
+        private bool _isRunning;
 
         public GameEngine()
         {
             _gameRenderer = new GameRenderer();
             _oldSpriteRenderer = new OldSpriteRenderer();
             _battleFacade = new BattleFacade();
+            _inputHandler = new InputHandler();
         }
 
-        public void RunDemo()
+        public void Run()
+        {
+            LoadConfig();
+            InitializeWorld();
+            InitializeObservers();
+            InitializeInput();
+            PrintControls();
+            RenderFrame();
+
+            _isRunning = true;
+            GameLoop();
+        }
+
+        private void InitializeWorld()
+        {
+            _currentLevel = CreateLevel();
+
+            SpawnCharacters(_currentLevel);
+            BuildStructures(_currentLevel);
+            CloneEnemies(_currentLevel);
+
+            _player = _currentLevel.Player;
+            _playerWeapon = CreatePlayerWeapon();
+
+            if (_player != null)
+            {
+                _player.EquippedWeapon = _playerWeapon;
+            }
+
+            PrepareBossProxy();
+        }
+
+        private void InitializeInput()
+        {
+            if (_player == null)
+            {
+                Console.WriteLine("Player was not found. Input system was not initialized.");
+                return;
+            }
+
+            _inputHandler.SetCommand(ConsoleKey.A, new MoveLeftCommand(_player));
+            _inputHandler.SetCommand(ConsoleKey.D, new MoveRightCommand(_player));
+            _inputHandler.SetCommand(ConsoleKey.W, new JumpCommand(_player));
+            _inputHandler.SetCommand(ConsoleKey.Spacebar, new AttackCommand(_player));
+        }
+
+        private void GameLoop()
+        {
+            while (_isRunning)
+            {
+                ConsoleKey key = Console.ReadKey(true).Key;
+
+                switch (key)
+                {
+                    case ConsoleKey.Escape:
+                        _isRunning = false;
+                        break;
+
+                    case ConsoleKey.B:
+                        StartBossEncounter();
+                        break;
+
+                    default:
+                        bool handled = _inputHandler.HandleInput(key);
+
+                        if (!handled)
+                        {
+                            Console.WriteLine($"No command is assigned to key: {key}");
+                        }
+
+                        break;
+                }
+
+                if (_isRunning)
+                {
+                    UpdateWorld();
+                    RenderFrame();
+                }
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("Engine stopped.");
+        }
+        private void UpdateWorld()
+        {
+            if (_currentLevel == null)
+            {
+                return;
+            }
+
+            foreach (Character character in _currentLevel.Characters)
+            {
+                character.Update();
+            }
+        }
+
+        private void PrintHeader()
         {
             Console.WriteLine("========================================");
             Console.WriteLine("        2D PLATFORMER GAME ENGINE       ");
             Console.WriteLine("========================================");
             Console.WriteLine();
+        }
 
-            LoadConfig();
-
-            Level level = CreateLevel();
-
-            SpawnCharacters(level);
-            BuildStructures(level);
-            CloneEnemies(level);
-
-            level.PrintInfo();
-            PrintAsciiMap(level);
-
+        private void PrintControls()
+        {
             Console.WriteLine();
-            Console.WriteLine("=== STRUCTURAL PATTERNS INTEGRATION ===");
+            Console.WriteLine("Controls:");
+            Console.WriteLine("A - move left");
+            Console.WriteLine("D - move right");
+            Console.WriteLine("W - jump");
+            Console.WriteLine("Space - attack");
+            Console.WriteLine("B - start boss encounter");
+            Console.WriteLine("Esc - exit");
             Console.WriteLine();
-
-            RenderLevelWithAdapter(level);
-
-            IWeapon playerWeapon = CreatePlayerWeapon();
-
-            PrepareBossProxy();
-            StartBossEncounter(playerWeapon);
         }
 
         private void LoadConfig()
@@ -74,9 +172,9 @@ namespace GameEngine2D.Core.Engine
             Level level = new Level
             {
                 Name = "Forest Platformer Level",
-                Background = background.Name,
-                PlatformStyle = platformStyle.Name,
-                DecorationStyle = decorationStyle.Name,
+                Background = background,
+                PlatformStyle = platformStyle,
+                DecorationStyle = decorationStyle,
                 Width = GameConfig.Instance.MapWidth,
                 Height = GameConfig.Instance.MapHeight
             };
@@ -97,17 +195,36 @@ namespace GameEngine2D.Core.Engine
             CharacterFactory npcFactory = new NpcFactory();
             CharacterFactory enemyFactory = new EnemyFactory();
 
-            level.Characters.Add(playerFactory.SpawnCharacter("Hero"));
-            level.Characters.Add(npcFactory.SpawnCharacter("Old Guide"));
-            level.Characters.Add(enemyFactory.SpawnCharacter("Wild Goblin"));
+            Character player = playerFactory.SpawnCharacter("Hero");
+            Character npc = npcFactory.SpawnCharacter("Old Guide");
+            Character enemy = enemyFactory.SpawnCharacter("Wild Goblin");
+
+            if (enemy is Enemy wildGoblin)
+            {
+                wildGoblin.SetBehaviorStrategy(new AggressiveBehaviorStrategy());
+            }
+
+            level.Characters.Add(player);
+            level.Characters.Add(npc);
+            level.Characters.Add(enemy);
 
             Console.WriteLine("[Factory Method] Characters created:");
-            Console.WriteLine("- Player: Hero");
-            Console.WriteLine("- NPC: Old Guide");
-            Console.WriteLine("- Enemy: Wild Goblin");
+            Console.WriteLine($"- {player.GetInfo()}");
+            Console.WriteLine($"- {npc.GetInfo()}");
+            Console.WriteLine($"- {enemy.GetInfo()}");
             Console.WriteLine();
         }
 
+        private void InitializeObservers()
+        {
+            if (_player == null)
+            {
+                return;
+            }
+
+            _player.Attach(new PlayerLogObserver(_player));
+            _player.Attach(new PlayerHudObserver(_player));
+        }
         private void BuildStructures(Level level)
         {
             StructureDirector director = new StructureDirector();
@@ -137,24 +254,97 @@ namespace GameEngine2D.Core.Engine
 
             Enemy original = goblinPrototype.Clone();
             original.Name = "Goblin Original";
+            original.SetBehaviorStrategy(new PatrolBehaviorStrategy(20, 35));
 
             Enemy clone1 = goblinPrototype.Clone();
             clone1.Name = "Goblin Clone #1";
             clone1.X = 26;
+            clone1.SetBehaviorStrategy(new AggressiveBehaviorStrategy());
 
             Enemy clone2 = goblinPrototype.Clone();
             clone2.Name = "Goblin Clone #2";
             clone2.X = 32;
+            clone2.SetBehaviorStrategy(new IdleBehaviorStrategy());
 
             level.Characters.Add(original);
             level.Characters.Add(clone1);
             level.Characters.Add(clone2);
 
-            Console.WriteLine("[Prototype] Enemies cloned:");
-            Console.WriteLine("- Goblin Original");
-            Console.WriteLine("- Goblin Clone #1");
-            Console.WriteLine("- Goblin Clone #2");
+            Console.WriteLine("[Prototype + Strategy] Enemies cloned with different behaviors:");
+            Console.WriteLine($"- {original.GetInfo()}");
+            Console.WriteLine($"- {clone1.GetInfo()}");
+            Console.WriteLine($"- {clone2.GetInfo()}");
             Console.WriteLine();
+        }
+
+        private IWeapon CreatePlayerWeapon()
+        {
+            Console.WriteLine("[Bridge + Decorator] Preparing player weapon:");
+
+            IWeapon weapon = new Sword(
+                GameConfig.Instance.PlayerWeaponDamage,
+                new MeleeAttackImplementor());
+
+            Console.WriteLine("- Base weapon: Sword");
+            Console.WriteLine("- Attack implementation: MeleeAttackImplementor");
+
+            weapon = new FireWeapon(
+                weapon,
+                GameConfig.Instance.FireEffectDamage);
+
+            Console.WriteLine("- Added decorator: FireWeapon");
+
+            if (GameConfig.Instance.UseIceEffect)
+            {
+                weapon = new IceWeapon(weapon);
+                Console.WriteLine("- Added decorator: IceWeapon");
+            }
+
+            Console.WriteLine();
+            return weapon;
+        }
+
+        private void PrepareBossProxy()
+        {
+            _boss = new BossProxy(
+                GameConfig.Instance.BossName,
+                GameConfig.Instance.BossHealth,
+                GameConfig.Instance.BossDamage);
+
+            Console.WriteLine("[Proxy] Boss is prepared through BossProxy.");
+            Console.WriteLine("- RealBoss has not been created yet.");
+            Console.WriteLine($"- Preview: {_boss.GetInfo()}");
+            Console.WriteLine();
+        }
+
+        private void StartBossEncounter()
+        {
+            if (_boss == null || _playerWeapon == null)
+            {
+                Console.WriteLine("Boss encounter cannot start because boss or player weapon is missing.");
+                return;
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("[Facade] Starting boss encounter...");
+            _battleFacade.StartBossBattle(_playerWeapon, _boss);
+            Console.WriteLine();
+        }
+
+        private void RenderFrame()
+        {
+            if (_currentLevel == null)
+            {
+                Console.WriteLine("No level loaded.");
+                return;
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("=========== CURRENT FRAME ===========");
+
+            _currentLevel.PrintInfo();
+            PrintAsciiMap(_currentLevel);
+            RenderLevelWithAdapter(_currentLevel);
         }
 
         private void RenderLevelWithAdapter(Level level)
@@ -176,59 +366,6 @@ namespace GameEngine2D.Core.Engine
             Console.WriteLine();
         }
 
-        private IWeapon CreatePlayerWeapon()
-        {
-            Console.WriteLine("[Bridge + Decorator] Preparing player weapon:");
-
-            IWeapon weapon = new Sword(
-                GameConfig.Instance.PlayerWeaponDamage,
-                new MeleeAttackImplementor());
-
-            Console.WriteLine("- Base weapon: Sword");
-            Console.WriteLine("- Attack implementation: MeleeAttackImplementor");
-
-            weapon = new FireWeapon(
-                weapon,
-                GameConfig.Instance.FireEffectDamage);
-
-            Console.WriteLine("- Added decorator: FireEffectDecorator");
-
-            if (GameConfig.Instance.UseIceEffect)
-            {
-                weapon = new IceWeapon(weapon);
-                Console.WriteLine("- Added decorator: IceEffectDecorator");
-            }
-
-            Console.WriteLine();
-            return weapon;
-        }
-
-        private void PrepareBossProxy()
-        {
-            _boss = new BossProxy(
-                GameConfig.Instance.BossName,
-                GameConfig.Instance.BossHealth,
-                GameConfig.Instance.BossDamage);
-
-            Console.WriteLine("[Proxy] Boss is prepared through BossProxy.");
-            Console.WriteLine("- RealBoss has not been created yet.");
-            Console.WriteLine($"- Preview: {_boss.GetInfo()}");
-            Console.WriteLine();
-        }
-
-        private void StartBossEncounter(IWeapon playerWeapon)
-        {
-            if (_boss == null)
-            {
-                Console.WriteLine("Boss is not ready.");
-                return;
-            }
-
-            Console.WriteLine("[Facade] Starting boss encounter...");
-            _battleFacade.StartBossBattle(playerWeapon, _boss);
-            Console.WriteLine();
-        }
-
         private void PrintAsciiMap(Level level)
         {
             char[,] map = CreateEmptyMap(level.Width, level.Height);
@@ -247,6 +384,7 @@ namespace GameEngine2D.Core.Engine
                 {
                     Console.Write(map[y, x]);
                 }
+
                 Console.WriteLine();
             }
 
@@ -299,17 +437,9 @@ namespace GameEngine2D.Core.Engine
         {
             foreach (Structure structure in structures)
             {
-                char symbol = structure.Name switch
-                {
-                    "House" => 'H',
-                    "Trap" => 'T',
-                    "Bridge" => 'B',
-                    _ => 'S'
-                };
-
                 if (IsInside(structure.X, structure.Y, width, height))
                 {
-                    map[structure.Y, structure.X] = symbol;
+                    map[structure.Y, structure.X] = structure.MapSymbol;
                 }
             }
         }
@@ -318,17 +448,9 @@ namespace GameEngine2D.Core.Engine
         {
             foreach (Character character in characters)
             {
-                char symbol = character switch
-                {
-                    Player => 'P',
-                    Npc => 'N',
-                    Enemy => 'E',
-                    _ => '?'
-                };
-
                 if (IsInside(character.X, character.Y, width, height))
                 {
-                    map[character.Y, character.X] = symbol;
+                    map[character.Y, character.X] = character.MapSymbol;
                 }
             }
         }

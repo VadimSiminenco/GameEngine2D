@@ -21,11 +21,7 @@ namespace GameEngine2D
             }
 
             GameEngine engine = new GameEngine();
-            engine.RunDemo();
-
-            Console.WriteLine();
-            Console.WriteLine("Press any key to exit...");
-            Console.ReadKey();
+            engine.Run();
         }
     }
 }

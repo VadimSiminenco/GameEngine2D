@@ -12,7 +12,9 @@ namespace GameEngine2D.Construction
             {
                 Name = "Trap",
                 X = 10,
-                Y = 4
+                Y = 4,
+                MapSymbol = 'T',
+                SpriteKey = "trap_sprite"
             };
         }
 

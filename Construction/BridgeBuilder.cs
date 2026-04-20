@@ -5,14 +5,15 @@ namespace GameEngine2D.Construction
     public class BridgeBuilder : IStructureBuilder
     {
         private Structure _structure = new();
-
         public void Reset()
         {
             _structure = new Structure
             {
                 Name = "Bridge",
                 X = 10,
-                Y = 2
+                Y = 2,
+                MapSymbol = 'B',
+                SpriteKey = "bridge_sprite"
             };
         }
 
