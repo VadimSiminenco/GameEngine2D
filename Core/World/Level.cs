@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Text;
 using GameEngine2D.Biomes;
 using GameEngine2D.Entities.Characters;
 using GameEngine2D.Entities.Structures;
@@ -21,29 +22,34 @@ namespace GameEngine2D.Core.World
 
         public Player? Player => Characters.OfType<Player>().FirstOrDefault();
 
-        public void PrintInfo()
+        public string GetInfo()
         {
-            Console.WriteLine();
-            Console.WriteLine("=== Level Info ===");
-            Console.WriteLine($"Name: {Name}");
-            Console.WriteLine($"Background: {Background?.Name ?? "None"}");
-            Console.WriteLine($"Platform Style: {PlatformStyle?.Name ?? "None"}");
-            Console.WriteLine($"Decoration Style: {DecorationStyle?.Name ?? "None"}");
-            Console.WriteLine($"Size: {Width} x {Height}");
+            StringBuilder builder = new StringBuilder();
 
-            Console.WriteLine();
-            Console.WriteLine("Characters:");
+            builder.AppendLine("=== Level Info ===");
+            builder.AppendLine($"Name: {Name}");
+            builder.AppendLine($"Background: {Background?.Name ?? "None"}");
+            builder.AppendLine($"Platform Style: {PlatformStyle?.Name ?? "None"}");
+            builder.AppendLine($"Decoration Style: {DecorationStyle?.Name ?? "None"}");
+            builder.AppendLine($"Size: {Width} x {Height}");
+
+            builder.AppendLine();
+            builder.AppendLine("Characters:");
+
             foreach (Character character in Characters)
             {
-                Console.WriteLine($"- {character.GetInfo()}");
+                builder.AppendLine($"- {character.GetInfo()}");
             }
 
-            Console.WriteLine();
-            Console.WriteLine("Structures:");
+            builder.AppendLine();
+            builder.AppendLine("Structures:");
+
             foreach (Structure structure in Structures)
             {
-                Console.WriteLine($"- {structure}");
+                builder.AppendLine($"- {structure}");
             }
+
+            return builder.ToString();
         }
     }
 }

@@ -1,40 +1,62 @@
-﻿using System;
-
-namespace GameEngine2D.Bosses
+﻿namespace GameEngine2D.Bosses
 {
     public class RealBoss : IBoss
     {
         private readonly string name;
-        private readonly int health;
-        private readonly int damage;
+
+        public int Health { get; private set; }
+        public int MaxHealth { get; }
+        public int Damage { get; }
+        public bool IsDefeated => Health <= 0;
 
         public RealBoss(string name, int health, int damage)
         {
             this.name = name;
-            this.health = health;
-            this.damage = damage;
-
-            LoadBossData();
+            Health = health;
+            MaxHealth = health;
+            Damage = damage;
         }
 
-        private void LoadBossData()
+        public string Spawn()
         {
-            Console.WriteLine($"[RealBoss] Loading boss '{name}'...");
+            return $"Boss '{name}' has appeared in the arena.";
         }
 
-        public void Spawn()
+        public string Attack()
         {
-            Console.WriteLine($"Boss '{name}' has appeared in the arena.");
+            if (IsDefeated)
+            {
+                return $"Boss '{name}' is defeated and cannot attack.";
+            }
+
+            return $"Boss '{name}' attacks and deals {Damage} damage.";
         }
 
-        public void Attack()
+        public string TakeDamage(int damage)
         {
-            Console.WriteLine($"Boss '{name}' attacks and deals {damage} damage.");
+            if (IsDefeated)
+            {
+                return $"Boss '{name}' is already defeated.";
+            }
+
+            Health -= damage;
+
+            if (Health < 0)
+            {
+                Health = 0;
+            }
+
+            if (IsDefeated)
+            {
+                return $"Boss '{name}' took {damage} damage and was defeated.";
+            }
+
+            return $"Boss '{name}' took {damage} damage. HP: {Health}/{MaxHealth}.";
         }
 
         public string GetInfo()
         {
-            return $"Boss: {name}, HP: {health}, DMG: {damage}";
+            return $"Boss: {name}, HP: {Health}/{MaxHealth}, DMG: {Damage}";
         }
     }
 }

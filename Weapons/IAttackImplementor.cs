@@ -2,6 +2,6 @@
 {
     public interface IAttackImplementor
     {
-        void AttackImplementation(string weaponName, int damage);
+        string AttackImplementation(string weaponName, int damage);
     }
 }

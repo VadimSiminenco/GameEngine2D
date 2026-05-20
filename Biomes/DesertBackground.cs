@@ -3,5 +3,6 @@
     public class DesertBackground : IBackground
     {
         public string Name => "Desert Background";
+        public string VisualKey => "desert";
     }
 }

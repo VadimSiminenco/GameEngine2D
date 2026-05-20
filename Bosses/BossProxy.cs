@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GameEngine2D.Bosses
+﻿namespace GameEngine2D.Bosses
 {
     public class BossProxy : IBoss
     {
@@ -19,6 +17,11 @@ namespace GameEngine2D.Bosses
             isSpawned = false;
         }
 
+        public int Health => realSubject?.Health ?? health;
+        public int MaxHealth => realSubject?.MaxHealth ?? health;
+        public int Damage => damage;
+        public bool IsDefeated => realSubject?.IsDefeated ?? false;
+
         private RealBoss CreateRealBossIfNeeded()
         {
             if (realSubject == null)
@@ -29,22 +32,31 @@ namespace GameEngine2D.Bosses
             return realSubject;
         }
 
-        public void Spawn()
+        public string Spawn()
         {
             RealBoss boss = CreateRealBossIfNeeded();
-            boss.Spawn();
             isSpawned = true;
+            return boss.Spawn();
         }
 
-        public void Attack()
+        public string Attack()
         {
             if (!isSpawned)
             {
-                Console.WriteLine($"Boss '{name}' cannot attack yet because it has not spawned.");
-                return;
+                return $"Boss '{name}' cannot attack yet because it has not spawned.";
             }
 
-            CreateRealBossIfNeeded().Attack();
+            return CreateRealBossIfNeeded().Attack();
+        }
+
+        public string TakeDamage(int damage)
+        {
+            if (!isSpawned)
+            {
+                return $"Boss '{name}' cannot be damaged before spawn.";
+            }
+
+            return CreateRealBossIfNeeded().TakeDamage(damage);
         }
 
         public string GetInfo()

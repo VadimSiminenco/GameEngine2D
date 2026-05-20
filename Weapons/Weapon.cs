@@ -13,6 +13,11 @@
             this.implementor = implementor;
         }
 
-        public abstract void Use();
+        public abstract string Use();
+
+        public virtual IReadOnlyList<WeaponEffectType> GetEffects()
+        {
+            return Array.Empty<WeaponEffectType>();
+        }
     }
 }

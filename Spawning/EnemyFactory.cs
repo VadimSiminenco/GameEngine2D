@@ -6,7 +6,7 @@ namespace GameEngine2D.Spawning
     {
         public override Character CreateCharacter(string name)
         {
-            return new Enemy(name, 60, 15, 20, 8);
+            return new Enemy(name, 60, 15, 10, 8);
         }
     }
 }

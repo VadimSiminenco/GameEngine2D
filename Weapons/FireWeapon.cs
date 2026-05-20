@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GameEngine2D.Weapons
+﻿namespace GameEngine2D.Weapons
 {
     public class FireWeapon : WeaponEffectDecorator
     {
@@ -12,10 +10,17 @@ namespace GameEngine2D.Weapons
             this.fireDamage = fireDamage;
         }
 
-        public override void Use()
+        public override string Use()
         {
-            base.Use();
-            Console.WriteLine($"Огненный эффект наносит дополнительно {fireDamage} урона.");
+            string baseMessage = base.Use();
+            return baseMessage + $" Огненный эффект наносит дополнительно {fireDamage} урона.";
+        }
+
+        public override IReadOnlyList<WeaponEffectType> GetEffects()
+        {
+            return component.GetEffects()
+                .Append(WeaponEffectType.Fire)
+                .ToList();
         }
     }
 }

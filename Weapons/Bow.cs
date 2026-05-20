@@ -7,9 +7,9 @@
         {
         }
 
-        public override void Use()
+        public override string Use()
         {
-            implementor.AttackImplementation(name, damage);
+            return implementor.AttackImplementation(name, damage);
         }
     }
 }

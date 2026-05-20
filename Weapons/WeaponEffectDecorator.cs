@@ -9,9 +9,14 @@
             this.component = component;
         }
 
-        public virtual void Use()
+        public virtual string Use()
         {
-            component.Use();
+            return component.Use();
+        }
+
+        public virtual IReadOnlyList<WeaponEffectType> GetEffects()
+        {
+            return component.GetEffects();
         }
     }
 }

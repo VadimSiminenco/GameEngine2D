@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace GameEngine2D.Weapons
+﻿namespace GameEngine2D.Weapons
 {
     public class IceWeapon : WeaponEffectDecorator
     {
@@ -9,15 +7,17 @@ namespace GameEngine2D.Weapons
         {
         }
 
-        public override void Use()
+        public override string Use()
         {
-            base.Use();
-            AddedBehavior();
+            string baseMessage = base.Use();
+            return baseMessage + " Ледяной эффект замедляет противника.";
         }
 
-        private void AddedBehavior()
+        public override IReadOnlyList<WeaponEffectType> GetEffects()
         {
-            Console.WriteLine("Ледяной эффект замедляет противника.");
+            return component.GetEffects()
+                .Append(WeaponEffectType.Ice)
+                .ToList();
         }
     }
 }

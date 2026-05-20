@@ -12,7 +12,10 @@ namespace GameEngine2D.Entities.Characters
         private IPlayerState currentState;
 
         public int Lives { get; }
+        public int FacingDirection { get; private set; }
         public IWeapon? EquippedWeapon { get; set; }
+
+        public string LastActionMessage { get; private set; }
 
         public Player(string name) : base(name, 100, 2, 8)
         {
@@ -20,6 +23,8 @@ namespace GameEngine2D.Entities.Characters
             MapSymbol = 'P';
             SpriteKey = "player_sprite";
             currentState = new IdleState();
+            LastActionMessage = "Player is idle.";
+            FacingDirection = 1;
         }
 
         public void Attach(IPlayerObserver observer)
@@ -80,32 +85,37 @@ namespace GameEngine2D.Entities.Characters
         {
             SetState(new AttackingState());
         }
-
         public void ExecuteMoveLeftAction()
         {
+            FacingDirection = -1;
+            LastActionMessage = $"{Name} moved left.";
             base.MoveLeft();
         }
 
         public void ExecuteMoveRightAction()
         {
+            FacingDirection = 1;
+            LastActionMessage = $"{Name} moved right.";
             base.MoveRight();
         }
 
         public void ExecuteJumpAction()
         {
-            Y++;
+            LastActionMessage = $"{Name} jumped.";
+            Y--;
         }
 
         public void ExecuteAttackAction()
         {
             if (EquippedWeapon == null)
             {
-                Console.WriteLine($"{Name} tries to attack, but no weapon is equipped.");
+                LastActionMessage = $"{Name} tried to attack, but no weapon is equipped.";
+                Notify();
                 return;
             }
 
-            Console.WriteLine($"{Name} attacks:");
-            EquippedWeapon.Use();
+            LastActionMessage = EquippedWeapon.Use();
+            Notify();
         }
 
         protected override void UpdateMainBehavior()
@@ -117,6 +127,18 @@ namespace GameEngine2D.Entities.Characters
         {
         }
 
+        public void TakeDamage(int damage)
+        {
+            Health -= damage;
+
+            if (Health < 0)
+            {
+                Health = 0;
+            }
+
+            LastActionMessage = $"{Name} took {damage} damage.";
+            Notify();
+        }
         public override string GetInfo()
         {
             string weaponInfo = EquippedWeapon == null ? "None" : EquippedWeapon.GetType().Name;

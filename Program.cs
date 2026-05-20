@@ -1,27 +1,13 @@
-﻿using System.Text;
-using GameEngine2D.Core.Engine;
-using GameEngine2D.Tests;
+﻿using GameEngine2D.Visual;
 
 namespace GameEngine2D
 {
-    internal class Program
+    internal static class Program
     {
-        static void Main(string[] args)
+        private static void Main()
         {
-            Console.OutputEncoding = Encoding.UTF8;
-
-            bool runTests = Array.Exists(
-                args,
-                arg => arg.Equals("--tests", StringComparison.OrdinalIgnoreCase));
-
-            if (runTests)
-            {
-                EngineTests.RunAllTests();
-                Console.WriteLine();
-            }
-
-            GameEngine engine = new GameEngine();
-            engine.Run();
+            using EngineVisualApp app = new EngineVisualApp();
+            app.Run();
         }
     }
 }
