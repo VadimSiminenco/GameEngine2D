@@ -125,8 +125,6 @@ namespace GameEngine2D.Visual.Rendering
                     rightArmOffset = -4;
                 }
             }
-
-            // Плащ
             if (facingLeft)
             {
                 DrawRect(spriteBatch, pixel, drawX + 12, drawY + 42, 16, 40, new Color(90, 38, 32));
@@ -137,48 +135,28 @@ namespace GameEngine2D.Visual.Rendering
                 DrawRect(spriteBatch, pixel, drawX + 68, drawY + 42, 16, 40, new Color(90, 38, 32));
                 DrawRect(spriteBatch, pixel, drawX + 72, drawY + 50, 18, 34, new Color(150, 52, 42));
             }
-
-            // Голова без шлема
             DrawRect(spriteBatch, pixel, drawX + 34, drawY + 14, 28, 22, skin);
             DrawRect(spriteBatch, pixel, drawX + 31, drawY + 8, 34, 10, hair);
             DrawRect(spriteBatch, pixel, drawX + 30, drawY + 16, 4, 8, hair);
             DrawRect(spriteBatch, pixel, drawX + 62, drawY + 16, 4, 8, hair);
-
             DrawRect(spriteBatch, pixel, drawX + 40, drawY + 22, 3, 4, outline);
             DrawRect(spriteBatch, pixel, drawX + 53, drawY + 22, 3, 4, outline);
-
-            // Шея
             DrawRect(spriteBatch, pixel, drawX + 43, drawY + 34, 10, 6, skin);
-
-            // Плечи
             DrawRect(spriteBatch, pixel, drawX + 26, drawY + 40, 14, 10, shoulderDark);
             DrawRect(spriteBatch, pixel, drawX + 56, drawY + 40, 14, 10, shoulderDark);
-
             DrawRect(spriteBatch, pixel, drawX + 28, drawY + 42, 10, 6, shoulderLight);
             DrawRect(spriteBatch, pixel, drawX + 58, drawY + 42, 10, 6, shoulderLight);
-
-            // Тело
             DrawRect(spriteBatch, pixel, drawX + 34, drawY + 40, 28, 26, tunicDark);
             DrawRect(spriteBatch, pixel, drawX + 36, drawY + 42, 24, 12, tunicLight);
             DrawRect(spriteBatch, pixel, drawX + 36, drawY + 54, 24, 10, tunicDark);
-
-            // Пояс
             DrawRect(spriteBatch, pixel, drawX + 34, drawY + 62, 28, 5, belt);
             DrawRect(spriteBatch, pixel, drawX + 45, drawY + 60, 8, 8, buckle);
-
-            // Левая рука
             DrawRect(spriteBatch, pixel, drawX + 20, drawY + 46 + leftArmOffset / 2, 10, 18, skin);
             DrawRect(spriteBatch, pixel, drawX + 18, drawY + 62 + leftArmOffset / 2, 10, 10, glove);
-
-            // Правая рука
             DrawRect(spriteBatch, pixel, drawX + 66, drawY + 46 + rightArmOffset / 2, 10, 18, skin);
             DrawRect(spriteBatch, pixel, drawX + 68, drawY + 62 + rightArmOffset / 2, 10, 10, glove);
-
-            // Ноги
             DrawRect(spriteBatch, pixel, drawX + 36, drawY + 68 + leftLegOffset / 2, 10, 22, pants);
             DrawRect(spriteBatch, pixel, drawX + 50, drawY + 68 + rightLegOffset / 2, 10, 22, pants);
-
-            // Ботинки
             DrawRect(spriteBatch, pixel, drawX + 34, drawY + 88 + leftLegOffset / 2, 14, 10, boot);
             DrawRect(spriteBatch, pixel, drawX + 48, drawY + 88 + rightLegOffset / 2, 14, 10, boot);
 
@@ -309,29 +287,19 @@ namespace GameEngine2D.Visual.Rendering
             {
                 if (playerState == "Attacking")
                 {
-                    // Левая атака: меч вынесен влево от персонажа
                     if (weaponEffect != WeaponEffectType.None)
                     {
                         DrawRect(spriteBatch, pixel, drawX - 48, handY - 6, 48, 22, bladeGlow);
                     }
-
-                    // Рука с мечом
                     DrawRect(spriteBatch, pixel, drawX + 14, handY + 2, 12, 7, new Color(118, 74, 34));
-
-                    // Рукоять
                     DrawRect(spriteBatch, pixel, drawX + 2, handY + 4, 14, 5, handle);
                     DrawRect(spriteBatch, pixel, drawX - 3, handY + 1, 5, 12, darkHandle);
-
-                    // Гарда, не щит
                     DrawRect(spriteBatch, pixel, drawX - 8, handY + 2, 5, 10, gold);
-
-                    // Лезвие, длинное и хорошо видимое
                     DrawRect(spriteBatch, pixel, drawX - 48, handY + 3, 40, 7, blade);
                     DrawRect(spriteBatch, pixel, drawX - 53, handY + 5, 5, 3, blade);
                 }
                 else
                 {
-                    // Меч в покое слева
                     if (weaponEffect != WeaponEffectType.None)
                     {
                         DrawRect(spriteBatch, pixel, drawX + 0, handY - 12, 20, 36, bladeGlow);
@@ -350,29 +318,19 @@ namespace GameEngine2D.Visual.Rendering
             {
                 if (playerState == "Attacking")
                 {
-                    // Правая атака: меч вынесен вправо от персонажа
                     if (weaponEffect != WeaponEffectType.None)
                     {
                         DrawRect(spriteBatch, pixel, drawX + 96, handY - 6, 48, 22, bladeGlow);
                     }
-
-                    // Рука с мечом
                     DrawRect(spriteBatch, pixel, drawX + 70, handY + 2, 12, 7, new Color(118, 74, 34));
-
-                    // Рукоять
                     DrawRect(spriteBatch, pixel, drawX + 80, handY + 4, 14, 5, handle);
                     DrawRect(spriteBatch, pixel, drawX + 94, handY + 1, 5, 12, darkHandle);
-
-                    // Гарда, не щит
                     DrawRect(spriteBatch, pixel, drawX + 99, handY + 2, 5, 10, gold);
-
-                    // Лезвие теперь такое же длинное, как слева
                     DrawRect(spriteBatch, pixel, drawX + 104, handY + 3, 40, 7, blade);
                     DrawRect(spriteBatch, pixel, drawX + 144, handY + 5, 5, 3, blade);
                 }
                 else
                 {
-                    // Меч в покое справа
                     if (weaponEffect != WeaponEffectType.None)
                     {
                         DrawRect(spriteBatch, pixel, drawX + 76, handY - 12, 20, 36, bladeGlow);

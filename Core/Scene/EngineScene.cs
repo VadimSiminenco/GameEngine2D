@@ -13,26 +13,17 @@ namespace GameEngine2D.Core.Scene
 {
     public class EngineScene
     {
-        // Abstract Factory: current biome data
         public string CurrentBiomeName { get; private set; }
         public string CurrentPlatformStyleName { get; private set; }
         public string CurrentDecorationStyleName { get; private set; }
         public BiomeType CurrentBiomeType { get; private set; }
         public string CurrentBackgroundVisualKey { get; private set; }
         public IReadOnlyList<BiomeDecoration> CurrentBiomeDecorations { get; private set; }
-
-        // Factory Method: characters
         public Player Player { get; private set; }
         public List<Npc> Npcs { get; private set; }
         public List<Enemy> Enemies { get; private set; }
-
-        // Builder: structures
         public List<Structure> Structures { get; private set; }
-
-        // Bridge + Decorator: weapon system
         public IWeapon PlayerWeapon { get; private set; }
-
-        // Proxy: boss
         public IBoss Boss { get; private set; }
         public int BossX { get; private set; }
         public int BossY { get; private set; }
@@ -47,22 +38,17 @@ namespace GameEngine2D.Core.Scene
         public string LastEditorMessage { get; private set; }
         private int enemyCounter;
         private int structureCounter;
-
         public bool IsPlayerDefeated { get; private set; }
         public bool IsLevelRestarting { get; private set; }
-
-        // Command: invoker
         private readonly CommandInvoker commandInvoker;
         private readonly PhysicsSystem physicsSystem;
         private readonly BossBehaviorSystem bossBehaviorSystem;
         private readonly CombatSystem combatSystem;
         private readonly InteractionSystem interactionSystem;
         private float playerAttackVisualTimer;
-
         private const float PlayerAttackVisualDuration = 0.18f;
         private float playerHitVisualTimer;
         private float restartTimer;
-
         private const float LevelRestartDelay = 2.0f;
         private const float PlayerHitVisualDuration = 0.25f;
         public EngineScene()
@@ -119,8 +105,6 @@ namespace GameEngine2D.Core.Scene
             CreateWeapon();
             CreateBoss();
         }
-
-        // Abstract Factory: Biomes
         private void CreateBiome()
         {
             SetForestBiome();
@@ -156,9 +140,6 @@ namespace GameEngine2D.Core.Scene
 
             LastEditorMessage = $"{CurrentBiomeName} biome applied";
         }
-
-        // Factory Method: Character spawning
-
         private void CreateCharacters()
         {
             CharacterFactory playerFactory = new PlayerFactory();
@@ -184,7 +165,6 @@ namespace GameEngine2D.Core.Scene
             enemy2.Y = PhysicsSystem.CharacterGroundY;
             Enemies.Add(enemy2);
         }
-
         public void SpawnEnemy()
         {
             enemyCounter++;
@@ -224,7 +204,6 @@ namespace GameEngine2D.Core.Scene
 
             LastEditorMessage = "NPC placed";
         }
-        // Builder: Structure construction
 
         private void CreateStructures()
         {
@@ -321,8 +300,6 @@ namespace GameEngine2D.Core.Scene
 
             Structures.Add(structure);
         }
-        // Bridge + Decorator: Weapon setup and visual effect check
-
         private void CreateWeapon()
         {
             IAttackImplementor attackImplementor = new MeleeAttackImplementor();
@@ -361,9 +338,6 @@ namespace GameEngine2D.Core.Scene
 
             LastEditorMessage = "Ice effect applied";
         }
-
-        // Proxy: Boss creation and automatic behavior
-
         private void CreateBoss()
         {
             Boss = new BossProxy("Ancient Guardian", 400, 25);
@@ -530,16 +504,10 @@ namespace GameEngine2D.Core.Scene
             IsPlayerOnTrap = interactionSystem.IsPlayerOnTrap(Player, Structures);
             IsTrapActivated = interactionSystem.TryActivateTrap(Player, Structures, 10);
         }
-
-        // Observer: HUD subscription
-
         public void AttachPlayerObserver(IPlayerObserver observer)
         {
             Player.Attach(observer);
         }
-
-        // Command + State: Player actions
-
         public void MovePlayerLeft()
         {
             ICommand command = new MoveLeftCommand(Player);
